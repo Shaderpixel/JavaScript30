@@ -15,12 +15,27 @@
     <input id="blur" type="range" name="blur" min="0" max="25" value="10" data-sizing="px">
 
     <label for="base">Base Color</label>
-    <input id="base" type="color" name="base" value="#ffc600">
+    <input id="base" type="color" name="base" value="#FFC107">
   </div>
 
   <img src="https://source.unsplash.com/7bwQXzbF6KE/800x500">
 
   <style>
+    :root {
+      --base: #FFC107;
+      --spacing: 10px;
+      --blur: 10px;
+    }
+
+    img {
+      padding: var(--spacing);
+      background-color: var(--base);
+      filter: blur(var(--blur));
+    }
+
+    .hl {
+      color: var(--base);
+    }
 
     /*
       misc styles, nothing to do with CSS variables
@@ -45,7 +60,30 @@
   </style>
 
   <script>
+    //select all input
+    const inputs = Array.from(document.querySelectorAll('.controls input'));
+
+
+
+    function handleUpdate() {
+      //if element doesnt have the data-sizing attribute then it will get empty string if its undefined
+      const suffix = this.dataset.sizing || '';
+
+      //select CSS variables by selecting the document which is the root and then set a property for each of those variables
+      document.documentElement.style.setProperty(`--${this.name}`, this.value + suffix);
+
+      //will see value changing on the root HTML element
+    }
+
+    //newer browsers has forEach method for nodelist
+    inputs.forEach(input => input.addEventListener('change', handleUpdate));
+
+    //this is for when you are still adjusting the slider values and have not release the button. Change event only capture values when the key has been released
+    //how to set flags for where when click it sets true and click off it set it to false? cause right now it triggers whenever I move mouse over the input
+    inputs.forEach(input => input.addEventListener('mousemove', handleUpdate));
+
   </script>
 
 </body>
 </html>
+
