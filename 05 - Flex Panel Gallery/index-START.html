@@ -24,9 +24,14 @@
     .panels {
       min-height:100vh;
       overflow: hidden;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: stretch;
+      align-items: stretch;
     }
 
     .panel {
+      flex: 1 1 auto;
       background:#6B0F9C;
       box-shadow:inset 0 0 0 5px rgba(255,255,255,0.1);
       color:white;
@@ -41,6 +46,9 @@
       font-size: 20px;
       background-size:cover;
       background-position:center;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
     }
 
 
@@ -50,10 +58,31 @@
     .panel4 { background-image:url(https://source.unsplash.com/ITjiVXcwVng/1500x1500); }
     .panel5 { background-image:url(https://source.unsplash.com/3MNzGlQM7qs/1500x1500); }
 
+    /* flex items */
     .panel > * {
       margin:0;
       width: 100%;
       transition:transform 0.5s;
+      flex: 1 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* move first child to the top out of the viewport for 100% height*/
+    .panel > *:first-child {
+      transform: translateY(-100%);
+    }
+    .panel.open-active > *:first-child {
+      transform: translateY(0);
+    }
+
+    /* move first child to the bottom out of the viewport for 100% height*/
+    .panel > *:last-child {
+      transform: translateY(100%);
+    }
+    .panel.open-active > *:last-child {
+      transform: translateY(0);
     }
 
     .panel p {
@@ -68,6 +97,8 @@
 
     .panel.open {
       font-size:40px;
+      /*when its given this class, the particular panel will grow 5 times bigger than the rest*/
+      flex: 5;
     }
 
   </style>
@@ -102,6 +133,24 @@
   </div>
 
   <script>
+    const panels = document.querySelectorAll('.panel');
+    console.log(panels);
+
+    function toggleOpen() {
+      this.classList.toggle('open');
+    };
+
+    function toggleActive(e) {
+      //to figure out which transition event property took place
+      //console.log(e.propertyName);
+      //we only want .open-active to be toggled after flex-grow transitioned finish. Some browsers report flex-grow propertyName as flex-grow, others as flex
+      if (e.propertyName.includes("flex")) {
+        e.target.classList.toggle('open-active');
+      }
+    };
+
+    panels.forEach(panel => panel.addEventListener("click", toggleOpen));
+    panels.forEach(panel => panel.addEventListener("transitionend", toggleActive));
 
   </script>
 
