@@ -7,6 +7,93 @@
 <body>
 <canvas id="draw" width="800" height="800"></canvas>
 <script>
+    const canvas = document.querySelector('#draw');
+    //drawing happens on the context and not directly on the canvas
+    //context can either be 2d or 3d
+    const ctx = canvas.getContext('2d');
+
+    //change the default canvas dimenstions from 800 to whatever the inner window dimensions are
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    //can use viewport units too but that will not alter the default attribute on the canvas but the canvas dimensions are still overridden
+    // canvas.style.width = '100vw';
+    // canvas.style.height = '100vh';
+
+    //proides color for the drawing
+    ctx.strokeStyle = '#BADA55';
+    //how the joining between two lines will be
+    ctx.lineJoin = 'round';
+    //how the end of the line appears
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 0;
+    //similar to photoshop blend modes
+    ctx.globalCompositeOperation = 'multiply';
+
+    //--Dummy variables
+    //flag for when mouse is clicked to actually draw it becomes true
+    //is this the one that Wes mentioned for the slider in lesson03 ?
+    let isDrawing = false;
+    //stores the end value coordinates and along with the initial coordinates, these will form a line
+    let lastX = 0;
+    let lastY = 0;
+    let hue = 0; //hue is the component of HSL that changes the color
+    let direction  = true;
+
+    //function that is called whenever the mouse cursor is moved on top of the canvas
+    function draw(e) {
+        //prevent function from drawing when mouse is not moused down
+        if (!isDrawing) return;
+
+        console.log(e);
+
+        //drawing code where all of the drawing happens on the ctx
+
+        //change color as drawing progresses
+        ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+        ctx.beginPath();
+        //start drawing point
+        ctx.moveTo(lastX, lastY);
+        //end drawing point where cursor stops
+        ctx.lineTo(e.offsetX, e.offsetY);
+        //actual drawing happens when stroke() is called
+        ctx.stroke();
+
+        //update starting point
+        [lastX, lastY] = [e.offsetX, e.offsetY] //ES6 destructuring an array allow use to set multiple variables in one line
+
+        hue++; //increment hue everytime draw is called
+        //hue color goes back to red again when its past 360 so instead of letting it wrap itself around colorwise when the hue value is past 360, we can reset it
+        if (hue >= 360) {
+            hue = 0;
+        }
+
+        //direction starts off at true, so it will increment until 100 then it will change to false then decrease till 0 then it will switch again.
+        if (ctx.lineWidth >= 100 || ctx.lineWidth <=1) {
+            direction = !direction;
+        }
+
+        if (direction) {
+            //if direction is true increase lineWidth
+            ctx.lineWidth++;
+        } else {
+            //if direction is false decrease lineWidth
+            ctx.lineWidth--;
+        }
+
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+        isDrawing = true;
+    });
+
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    //for when the mouse is still held down when the cursor leaves the window and if it comes back it is still drawing because the mouse is considered still down because the mouse up event is not registered on the canvas
+    canvas.addEventListener('mouseout', () => isDrawing = false);
+
 </script>
 
 <style>
@@ -17,3 +104,10 @@
 
 </body>
 </html>
+
+<!--
+    Lesson Learnt
+    1. HSL color stands for Hue, Saturation, and Lightness.
+        --Lightness 100% is white, 0% is black
+        --We can set HSL values programmatically HSL(a) is the jam. It's a piece of cake to do mentally, too. Hue is like this: ROY G BIV is 0 to 300, and then back to red again at 360. Saturation % is from grey to intense color; lightness % and alpha 0-1 are easy 'nuff. read more on hsl awesomeness.
+ -->
