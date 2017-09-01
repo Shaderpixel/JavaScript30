@@ -99,6 +99,53 @@
   </div>
 
 <script>
+const checkboxes = document.querySelectorAll('.inbox [type="checkbox"]');
+
+let lastChecked;
+
+function handleCheck(e) {
+  //flag variable
+  let inBetween = false;
+
+  //check if they have the shift key down
+  //AND check if they are checking it
+  if (e.shiftKey && this.checked) {
+    //go ahead and do what we want
+
+    //Assumption here is that you checked one first without holding down shift and that one is stored as lastChecked then you check a second one. But if no lastChecked is set then store this click as lastChecked then exit
+    if (lastChecked === undefined) {
+      lastChecked = this;
+      return;
+    }
+
+    //loop over every single checkbox from top to bottom to detect first checked checkbox
+    checkboxes.forEach(checkbox => {
+      if(checkbox === this || checkbox === lastChecked) {
+        console.log(checkbox);
+        //when condition is met, inBetween value changes from false to true and true to false
+        inBetween = !inBetween;
+        console.log('Checking triggered');
+      }
+
+      if (inBetween) {
+        checkbox.checked = true;
+      };
+    })
+  }
+
+  lastChecked = this;
+}
+
+checkboxes.forEach(checkbox => checkbox.addEventListener("click", handleCheck));
+
 </script>
 </body>
 </html>
+<!--
+Lesson Learnt
+1 - Alter value by setting a boolean value equal to the inverse of itself upon a certain condition
+2. Variable flags are helpful to set if something should proceed or no
+3. There is a property for shiftkey and ctrlkey in event object
+4. Certain values that needs to mutates at every loop should be placed at the end of the function statement e.g. lastChecked = this
+5. Ternary operators must have two values, it can't work without an else value
+ -->
