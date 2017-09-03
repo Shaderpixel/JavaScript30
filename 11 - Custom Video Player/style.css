@@ -154,3 +154,9 @@ input[type=range]::-moz-range-thumb {
   background: #ffc600;
   cursor: pointer;
 }
+.fullScreen {
+  flex: 0.3;
+}
+.fullScreen svg{
+  width: 1.56em;
+}
