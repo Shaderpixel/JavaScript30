@@ -182,6 +182,42 @@
     </li>
   </ul>
 <script>
+//or spread it into a new array [...documentblabla]
+  const timeNodes = Array.from(document.querySelectorAll('[data-time]'));
+
+  // const seconds = timeNodes
+  //   .map(timeNode => timeNode.dataset.time)
+  //   .map(timeCode => {
+  //     //ES6 destructuring, map passes each element in array against parseFloat to convert them into strings
+  //     const [mins, secs] = timeCode.split(':').map(parseFloat);
+
+  //
+  //     return mins*60 + secs;
+  //   })
+  //   .reduce((total, vidSeconds) => total + vidSeconds);
+
+  //----reduce one line version
+  const seconds = timeNodes.reduce((total, timeNode) => {
+    //strings from array split are converted into numbers and stored as an object
+    const [mins, secs] = timeNode.dataset.time.split(':').map(parseFloat);
+    //object is converted into numbers
+    return total += parseFloat((mins * 60 + secs));
+  },0);
+
+  let secondsLeft = seconds;
+  const hours = Math.floor(secondsLeft / 3600);
+  secondsLeft = secondsLeft % 3600;
+
+  const mins = Math.floor(secondsLeft / 60);
+  secondsLeft = secondsLeft % 60;
+
+  console.log(hours, mins, secondsLeft);
+
 </script>
 </body>
 </html>
+<!--
+Lesson Learnt
+1. The split() method splits a String object into an array of strings by separating the string into substrings, using a specified separator string to determine where to make each split.
+2. without providing an initial value, reduce will ignore first item in timeNodes
+ -->
