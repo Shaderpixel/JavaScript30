@@ -12,6 +12,37 @@
 <script>
   window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+  const recognition = new SpeechRecognition();
+  //output results as people are speaking
+  recognition.interimResults = true;
+
+  let p = document.createElement('p');
+  const words = document.querySelector('.words');
+  words.appendChild(p);
+
+  recognition.addEventListener('result', e => {
+    //returns a SpeechRecognitionResultList not an array or node list
+
+    const transcript = Array.from(e.results)
+      .map(result => result[0])
+      .map(result => result.transcript)
+      .join('');
+
+    p.textContent = transcript;
+
+    if (e.results[0].isFinal) {
+      p = document.createElement('p');
+      words.appendChild(p);
+    }
+
+    console.log(transcript);
+
+    if(transcript.includes('unicorn')) console.log('🦄🦄🦄🦄🦄🦄🦄🦄🦄');
+  });
+
+  recognition.addEventListener('end', recognition.start);
+
+  recognition.start();
 
 </script>
 
@@ -58,3 +89,12 @@
 
 </body>
 </html>
+
+<!--
+Lesson Learnt
+1. SpeechRecognitionResultList> SpeechRecognitionResult > SpeechRecofnitionAlternative
+contains information about the percentage confidence on accuracy, the transcript of what's said, and isFinal bool whether the person has stopped speaking
+2.When the recognition.start begins picking up audio, it will produce results which triggers the event result. When there is no longer audio, the result event ends and the event will unbind itself. To keep listening, we need a second event where it detects on end of voice, run the recognition.start again.
+
+Personal Challenge: write a function to hook it up to a weather api to grab weather info
+ -->
