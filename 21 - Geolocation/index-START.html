@@ -58,6 +58,28 @@
     /*Compass: https://thenounproject.com/search/?q=compass&i=592352*/
   </style>
   <script>
+    const arrow = document.querySelector('.arrow');
+    const speed = document.querySelector('.speed-value');
+
+    //access usesr's position
+    navigator.geolocation.watchPosition((data) => {
+      console.log(data);
+      speed.textContent = data.coords.speed;
+      arrow.style.transform = `rotate(${data.coords.heading}deg) translate3d(0,0,0)`;
+    }, (err) => {
+      console.error(err);
+      alert(`${err.message}. You need to enable location services to use this feature.`);
+    });
+
+
   </script>
 </body>
 </html>
+
+<!--
+Lesson Learnt
+1. There's two methods for navigator.geolocation one is watchPosition, the other is getPosition. watchPosition constantly outputs data, more frequently if user is on the move
+2. data contains accuracy, heading (degrees relative to North), lat, long, speed kmph
+3. when theres an error, add another function after the callback function and pass in the error information
+
+ -->
