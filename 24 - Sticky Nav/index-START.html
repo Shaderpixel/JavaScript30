@@ -54,8 +54,34 @@
   </div>
 
 <script>
+  const nav = document.querySelector('#main');
+  const topOfNav = nav.offsetTop;
+
+  function fixNav() {
+    console.log(topOfNav);
+
+    if (window.scrollY >= topOfNav) {
+      //add padding that is equivalent to the nav height to prevent jerky jump of content when nav is removed from flow when it is fixed positioned
+      document.body.style.paddingTop = `${nav.offsetHeight}px`;
+      document.body.classList.add('fixed-nav');
+    } else {
+      document.body.style.paddingTop = null;
+      document.body.classList.remove('fixed-nav');
+    }
+  }
+
+
+
+  window.addEventListener('scroll', fixNav);
 
 </script>
 
 </body>
 </html>
+
+<!--
+Lesson Learnt
+1. Can't animate from width: 0 to width: auto;
+2. using max-width and scaleX has different animation effects where scaleX:0 will shrink the element while max-width: 0 will hide the element without shrinking it.
+
+ -->
