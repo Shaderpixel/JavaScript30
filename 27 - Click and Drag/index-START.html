@@ -35,7 +35,51 @@
   </div>
 
 <script>
+    const slider = document.querySelector('.items');
+    //flag to detect if clicking
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    const increment = 2;
+
+    slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        slider.classList.add('active');
+        //removing the slider offsetLeft to make sure that if the slider container is moved from the left edge. this accounts for it
+        //initial click position
+        startX = e.pageX - slider.offsetLeft;
+        //initial scrolling position to account where the current scroll position is
+        scrollLeft = slider.scrollLeft;
+    });
+
+    slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.classList.remove('active');
+    });
+
+    slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.classList.remove('active');
+    });
+
+    slider.addEventListener('mousemove', (e) => {
+        if(!isDown) return; //stop the fn from running
+        e.preventDefault(); //prevent default actions such as text select
+        const x = e.pageX - slider.offsetLeft;
+        // console.log({x, startX});
+        const walk = (x - startX) * increment; //calculate dragging distance from initial click down
+        slider.scrollLeft = scrollLeft - walk; //set current scrollLeft position to initial scrollLeft position plus dragged distance
+    });
 </script>
 
   </body>
 </html>
+<!--
+Lesson Learnt
+1. There is a webkit vendor prefix to set cursor to grabbing
+2. removing the slider offsetLeft to make sure that if the slider container is moved from the left edge (margin or whatever). this accounts for it since the offsetParent node is body this is fine otherwise we can use boundingClientRect
+3. The Element.scrollLeft property gets or sets the number of pixels that an element's content is scrolled to the left.
+
+Personal Challenge - drag and drop
+
+ -->
