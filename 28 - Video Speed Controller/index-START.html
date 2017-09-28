@@ -15,6 +15,34 @@
   </div>
 
 <script>
+  const speed =  document.querySelector('.speed');
+  const bar =  document.querySelector('.speed-bar');
+  const video = document.querySelector('.flex');
+
+  function handlePlayback(e) {
+    const y = e.pageY - this.offsetTop;
+    const percent = y/this.offsetHeight;
+    const min = 0.4;
+    const max = 4;
+    const height = Math.round(percent * 100) + '%';
+    const playbackRate = percent * (max - min) + min;
+
+    bar.style.height = height;
+    bar.textContent = `${playbackRate.toFixed(2)}x`;
+
+    video.playbackRate = playbackRate;
+  }
+
+
+  speed.addEventListener('mousemove', handlePlayback);
 </script>
 </body>
 </html>
+<!--
+Lesson Learnt
+1. using anonnymous arrow function with (e) doesn't work context of this is lost
+2. we are not using click and drag but just using mouse move to constantly update the value of the bar
+3. Number.prototype.toFixed() formats a number to have the specified fixed number of decimals
+4. playback rate can be adjusted through HTMLMediaElement.playbackRate (HTMLMediaElement can be audio or video)
+  - The audio is muted when the media plays backwards or if the fast forward or slow motion is outside a useful range (for example, Gecko mutes the sound outside the range 0.25 to 5.0).
+ -->
