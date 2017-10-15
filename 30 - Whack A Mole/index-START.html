@@ -9,7 +9,24 @@
 <body>
 
   <h1>Whack-a-mole! <span class="score">0</span></h1>
-  <button onClick="startGame()">Start!</button>
+  <h2>Previous Hi-score <span class="hi-score">0</span></h2>
+  <button class="clear-hi-score" onClick="clearHiScore()">Clear Hi-score</button>
+
+  <div class="difficulty-container">
+    <button data-difficulty="easy">Easy</button>
+    <button data-difficulty="medium" class="is-active">Medium</button>
+    <button data-difficulty="hard">Hard</button>
+    <button data-difficulty="insane">Insane</button>
+  </div>
+
+
+  <button class="start-game" onClick="startGame()">Start!</button>
+
+  <div class="timer-container">
+    <div class="progress-bar">
+      <span class="timer-display">0</span>
+    </div>
+  </div>
 
   <div class="game">
     <div class="hole hole1">
@@ -30,16 +47,60 @@
     <div class="hole hole6">
       <div class="mole"></div>
     </div>
+    <div class="overlay-container">
+      <span class="go-label">Go!</span>
+      <span class="time-up-label">Time's Up!</span>
+    </div>
+
   </div>
 
 <script>
+  //----------------------------
+  //----declare global variables
+  //----------------------------
   const holes = document.querySelectorAll('.hole');
   const scoreBoard = document.querySelector('.score');
+  const hiScoreBoard = document.querySelector('.hi-score');
   const moles = document.querySelectorAll('.mole');
+  const difficultyContainer = document.querySelector('.difficulty-container');
+  const difficultyButtons = difficultyContainer.querySelectorAll('button');
+  const overlayContainer = document.querySelector('.overlay-container');
+  const goLabel = overlayContainer.querySelector('.go-label');
+  const timeUpLabel = overlayContainer.querySelector('.time-up-label');
+  const level = {
+    easy: {
+      timeMin: 1000,
+      timeMax: 2000
+    },
+    medium: {
+      timeMin: 500,
+      timeMax: 1500
+    },
+    hard: {
+      timeMin: 200,
+      timeMax: 1000
+    },
+    insane: {
+      timeMin: 150,
+      timeMax: 800
+    }
+  }
+  //game is set to expire in 10secs
+  const gameTime = 10000;
+  const timerContainer = document.querySelector('.timer-container');
+  const timerDisplay = timerContainer.querySelector('.timer-display');
+  const progressBar = timerContainer.querySelector('.progress-bar')
+  let difficulty = 'medium';
   let lastHole;
   let timeUp = false;
   let score = 0;
+  let hiScore = JSON.parse(localStorage.getItem('hiScore')) || 0; //will try to get the hiScore value from localStorage and if it doesn't exist then fallback to 0
+ let peepTimer, goTimer1, goTimer2, goTimer3, timeUpTimer, gameOverTimer1, gameOverTimer2, gameOverTimer3, gameOverTimer4, countdown;
+ let currentPeepTime = 0;
 
+  //---------------------
+  //----declare functions
+  //---------------------
   function randomTime(min, max) {
     return Math.round(Math.random() * (max - min) + min);
   }
@@ -62,22 +123,81 @@
   }
 
   function peep() {
-    const time = randomTime(200, 1000);
+    const time = randomTime(level[difficulty].timeMin, level[difficulty].timeMax);
+    currentPeepTime = time;
     const hole = randomHole(holes);
     hole.classList.add('up');
-    setTimeout(() => {
+    peepTimer = setTimeout(() => {
       hole.classList.remove('up');
-      if (!timeUp) peep();
+      // if (!timeUp) peep();
+      !timeUp ? peep() : storeHiScore(score);
     }, time);
   }
 
   function startGame() {
-    scoreBoard.textContent = 0;
-    timeUp = false;
-    score = 0
-    peep();
+    resetGame();
+    timer(gameTime);
+    //dislay Go overlay, 300ms increment due to transition duration in CSS
+    overlayContainer.classList.add('is-active');
+    goTimer1 = setTimeout(() => {
+      goLabel.classList.add('visible');
+    }, 150);
+    goTimer2 = setTimeout(() => {
+      goLabel.classList.remove('visible');
+    }, 450);
+    goTimer3 = setTimeout(() => {
+      overlayContainer.classList.remove('is-active');
+      peep();
+    }, 750);
+
     //set the game to expire in 10secs
-    setTimeout(() => timeUp = true, 10000);
+    timeUpTimer = setTimeout(() => timeUp = true, gameTime);
+
+    //display Times Up overlay
+    gameOverTimer1 = setTimeout(() => overlayContainer.classList.add('is-active'), gameTime);
+    //it takes 400ms for the mole to go down
+    gameOverTimer2 = setTimeout(() => timeUpLabel.classList.add('visible'), gameTime + 150);
+    //takes 300 ms for the timeup label to finish transitioning
+    gameOverTimer3 = setTimeout(() => timeUpLabel.classList.remove('visible'), gameTime + 450);
+    gameOverTimer4 = setTimeout(() => overlayContainer.classList.remove('is-active'), gameTime + 500);
+
+   }
+
+   function setDifficulty() {
+    difficulty = this.dataset.difficulty.toString();
+    //remove current button highlight
+    difficultyContainer.querySelector('.is-active').classList.remove('is-active');
+    this.classList.add('is-active');
+
+    //what if game is already underway? we need to find a way to stop the game
+    resetGame();
+   }
+
+   function resetGame() {
+    timeUp = false;
+    storeHiScore();
+    scoreBoard.textContent = 0;
+    score = 0;
+
+    //reset game start and over cues
+    if (overlayContainer.classList.contains('is-active')) overlayContainer.classList.remove('is-active');
+    if (goLabel.classList.contains('visible')) goLabelr.classList.remove('visible');
+    if (timeUpLabel.classList.contains('visible')) timeUpLabel.classList.remove('visible');
+
+    //hide any visible moles
+    const visibleMole = document.querySelector('.hole.up');
+    if(visibleMole) visibleMole.classList.remove('up');
+
+    //clear all timers
+    clearTimeout(peepTimer);
+    clearTimeout(timeUpTimer);
+    clearTimeout(goTimer1);
+    clearTimeout(goTimer2);
+    clearTimeout(goTimer3);
+    clearTimeout(gameOverTimer1);
+    clearTimeout(gameOverTimer2);
+    clearTimeout(gameOverTimer3);
+    clearTimeout(gameOverTimer4);
    }
 
    function bonk(e) {
@@ -85,10 +205,66 @@
     score++;
     this.parentNode.classList.remove('up');
     scoreBoard.textContent = score;
-
    }
 
+   //store previous score in localStorage
+   function storeHiScore() {
+    //store new hiscore if new score > previous hiScore and display it
+    if (score < hiScore) return;
+    hiScore = score;
+    localStorage.setItem('hiScore', JSON.stringify(hiScore));
+    displayHiScore();
+   }
+
+   function displayHiScore() {
+    hiScoreBoard.textContent = hiScore;
+   }
+
+   function clearHiScore() {
+    localStorage.removeItem('hiScore');
+    hiScore = 0;
+    displayHiScore();
+   }
+
+   function timer(miliseconds) {
+    const now = Date.now();
+    const then = now + miliseconds;
+
+    //need to display time rightaway!!
+    const seconds = Math.round(miliseconds/1000);
+    displayTimeLeft(seconds);
+
+    countdown = setInterval(() => {
+      const secondsLeft = Math.round((then - Date.now()) / 1000);
+
+      if (secondsLeft < 0) {
+        clearInterval(countdown);
+        return;
+      }
+
+      console.log({secondsLeft, seconds});
+      progressBar.style.width = `${secondsLeft/seconds*90}%`;
+
+
+      //display time remaining!!
+      displayTimeLeft(secondsLeft);
+
+    }, 1000);
+   }
+
+   function displayTimeLeft(seconds) {
+      //dispay time in seconds
+      timerDisplay.textContent = `${seconds < 10 ? 0 : ''}${seconds}`;
+   }
+
+   //run displayHiScore on page load to show hiscore
+   displayHiScore();
+
+   //-----------------------
+   //declare event listeners
+   //-----------------------
    moles.forEach(mole => mole.addEventListener('click', bonk));
+   difficultyButtons.forEach(difficultyButton => difficultyButton.addEventListener('click', setDifficulty));
 </script>
 </body>
 </html>
@@ -98,8 +274,19 @@
 Lesson Learnt
 1. The setTimeout() function is commonly used if you wish to have your function called once after the specified delay. The setInterval() function is commonly used to set a delay for functions that are executed again and again, such as animations. The setImmediate() function can be used instead of the setTimeout(fn, 0) method to execute heavy operations in IE. The requestAnimationFrame() function tells the browser that you wish to perform an animation and requests that the browser schedule a repaint of the window for the next animation frame.
 2. A click event can be faked with JS but a click event actually has a property that is called isTrusted where it recognizes an actual click
+3. chaining multiple parameters in clearTimeout method is a bad idea because if the method encounters a timeout that is not present, the method will stop (e.g. clearTimeout(timeout1, timeout2))
+4. Sometimes milisecond calculation can give a negative zero value but using Math.round should give a 0 integer
 
 Personal Challenge
-1. store hi-score in local storage
-2. create levels with different min time and max time var
+1. store hi-score in local storage - done
+  - created hiScore variable and key in localStorage
+  - created displayHiScore and clearHiScore function
+2. create levels with different min time and max time -done
+  - create difficulty level buttons with data attributes corresponding to time object property names
+  -if game is already running, clicking on a difficulty level will reset the game
+3. clicking start multiple times can trigger multiple game instances
+  - assign id to all timeOuts and on reset clear them all
+  - restore all mole and labels to hidden
+4. create a countdown timer
+
  -->
