@@ -214,7 +214,55 @@
 </style>
 
 <script>
+  const triggers = document.querySelectorAll('.cool > li');
+  const background = document.querySelector('.dropdownBackground');
+  const nav = document.querySelector('.top');
+
+  function handleEnter() {
+    this.classList.add('trigger-enter');
+    setTimeout(() => this.classList.contains('trigger-enter') && this.classList.add('trigger-enter-active'), 150);
+    background.classList.add('open');
+
+    const dropdown = this.querySelector('.dropdown');
+    //why do we need dropdownCoords and navCoords?
+    const dropdownCoords = dropdown.getBoundingClientRect();
+    const navCoords = nav.getBoundingClientRect();
+    console.log(navCoords, dropdownCoords);
+    const coords = {
+      height: dropdownCoords.height,
+      width: dropdownCoords.width,
+      top: dropdownCoords.top - navCoords.top,
+      left: dropdownCoords.left - navCoords.left,
+    };
+
+    background.style.width = `${coords.width}px`;
+    background.style.height = `${coords.height}px`;
+    background.style.transform = `translate(${coords.left}px, ${coords.top}px)`;
+  }
+
+  function handleLeave() {
+    this.classList.remove('trigger-enter', 'trigger-enter-active');
+    // setTimeout(() => this.classList.remove('trigger-enter'), 150);
+    background.classList.remove('open');
+  }
+
+  triggers.forEach(trigger => trigger.addEventListener('mouseenter', handleEnter));
+  triggers.forEach(trigger => trigger.addEventListener('mouseleave', handleLeave));
+
+
 </script>
 
 </body>
 </html>
+
+<!--
+Lesson Learnt
+1. using this in a setTimeout function will not work properly because the nature of this has changed to the window that calls the setTimeout after the amount of time has expired. This no longer retains the original context. Instead, using arrow function does retain the original reference to this from the parent function. Closure
+2. To add animation from display: none & opacity: 0 to display: block & opacity: 1, we need to use two separate classes to stage display change and use setTimeOut to stage another class for opacity. Because display none to display block even with transition for opacity will not work and elements will be displayed right away. This method is common for react and angular
+ - it also allows boundingClientRect to gather dimensions of the element, it can't gather dimensions of a display none object
+ 3. Offsetting the dropdownCoords with navCoords is to ensure that the position of the dropdown is affected by the location of the nav. So if nav is bumped down and is nolonger anchored to the top of the screen, the navCoords.top will help correct the positioning of the dropdown. This is because dropdown is nested inside of nav and getBoundingClientRect doesnt care about that
+ 4. problem wiht the setTimeOut function adding classes is that if we move off really fast and the handleLeave removes the class which is not there but the set timeout adds the class after the set time has expired we run into the problem of having classes remaining on the elements
+ 5. shortcircuiting the && conditions where one condition is checked before the other part of the statement is triggered this.classList.contains('trigger-enter') && this.classList.add('trigger-enter-active')
+
+ Personal challenge: fold down effect on the actual stripe site on hover
+ -->
