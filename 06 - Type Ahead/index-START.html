@@ -15,8 +15,72 @@
     </ul>
   </form>
 <script>
-const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+  const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+  const cities = [];
+  fetch(endpoint)
+    .then(blob => blob.json())
+    .then(data => cities.push(...data)); //add data into cities as an array
 
+  //function to add commas to numbers every third digit
+  function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  //function to listen to characters being entered into input and filter cities
+  function findMatches(wordToMatch, cities) {
+    return cities.filter(place => {
+      //we need to figure out if the city or state matches what was searched
+      //we can't pass a variable straight into match(), we need to create a regular expression object outside of it
+      //flags 'gi' is for global and case insensitive
+      const regex = new RegExp(wordToMatch, 'gi');
+      //filter condition
+      //match() if true will return an array containing the entire match result
+      return place.city.match(regex) || place.state.match(regex);
+    })
+  }
+
+  //function to display result returned by findMatches
+  function displayMatches(e) {
+      const matchArray = findMatches(this.value, cities);
+
+      const html = matchArray.map(place => {
+        //highlighting matched word
+        const regex = new RegExp(this.value, 'gi');
+        //cityName after replace may not be uppercase but its capitalized using CSS
+        const cityName = place.city.replace(regex, `<span class="hl">${this.value}</span>`);
+        const stateName = place.state.replace(regex, `<span class="hl">${this.value}</span>`);
+        const populationNumber = numberWithCommas(place.population);
+
+
+        return `<li>
+            <span class="name">${cityName}, ${stateName}</span>
+            <span class="population">${populationNumber}</span>
+        </li>`
+      }).join(''); //join to join all array elements into one string instead of an array structure with commas
+
+      suggestions.innerHTML = html;
+  }
+
+  const searchInput = document.querySelector('.search');
+  const suggestions = document.querySelector('.suggestions');
+
+  searchInput.addEventListener('input', displayMatches);
 </script>
   </body>
 </html>
+
+
+<!--
+Lesson Learnt:
+-Fetch is a new browser technology which is a new browser API,
+-Somewhat similar to a HTML or XML HTTP request in the browser like jQuery $.getJSON
+-Fetch is not similar to getJSON in the sense that you don't perform a callback function on the returned data, Fetch returns a promise that something will eventually be fetched
+-then() method works with what is returned and the data needs to be converted into a usable format e.g. blob to JSON, jpg, wav
+-blob has a prototype for json which will return another promise
+-const doesn't allow a redeclaring or reassigning of the same constant
+-spread ES6 operator is the three ellipsis that lets you spread out iterable objects
+-if we just push(data), it will be added as a single item, but if we spread data out and add it one by one it will be turned into an actual array when added to cities
+-change event only triggers when the element loses focus while input event triggers immediately, immitate input event by combining change event with keyup event
+-when using named functions in callbacks don't use parentheses otherwise it will be called immediately. Without the parentheses, it is just a reference to the named function so that it will becalled when the callback is used
+-array.prototype.join(['separator']), joins all elements of an array into a string
+-->
