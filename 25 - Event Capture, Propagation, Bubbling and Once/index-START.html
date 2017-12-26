@@ -39,7 +39,29 @@
 
 <button></button>
 <script>
+  const divs = document.querySelectorAll('div');
+  const button = document.querySelector('button');
+
+  function logText(e) {
+    console.log(this.classList.value);
+    // e.stopPropagation(); //stop bubbling
+  }
+
+  divs.forEach(div => div.addEventListener('click', logText, { capture: false, once: true }));
+
+  button.addEventListener('click', () => {
+    console.log("Click!!!");
+  }, { once:true });
 
 </script>
 </body>
 </html>
+<!--
+Lesson Learnt
+1. Event Bubbling: when you click an element, if its a child of something, the parent will also receive the event, all the way up to the document element. It might not show it if you are not listening on those parent elements or if you are not listening on those multiple events
+  i - capture: when an event is triggered, the browser will first perform a capture that actually travels top down from parent to the element which triggers the event capturing all of those events that will be fired. At this point the callback has not been fired
+  ii - bubble: Once capture phase is down, bubble phase begins from bottom up, where the callback function is fired
+2. if we pass a third options object that has the property value for capture of true, callbacks will be fired as capture phase is being performed so callbacks are being triggered top down instead of during the bubble phase of bottom up (div.addEventListener('click', logText, { capture: true }));)
+3. Stop Propagation - Instead of bubbling up, we can call e.stopPropagation() to prevent bubbling from happening
+4. Once - the once object will let the event listener trigger itself once and then unbind itself from the element so no future call can be made.
+ -->
