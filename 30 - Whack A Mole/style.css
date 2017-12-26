@@ -21,11 +21,30 @@ h1 {
   margin-bottom: 0;
 }
 
-.score {
+h2 {
+  font-size: 4rem;
+  text-align: center;
+}
+
+.score, .hi-score {
   background:rgba(255,255,255,0.2);
   padding:0 3rem;
   line-height:1;
   border-radius:1rem;
+}
+
+.difficulty-container button.is-active {
+  color: #fff;
+  background-color: #048467;
+  border: 1px solid #eee;
+  border-radius: 5px;
+}
+
+.start-game {
+  display: flex;
+  padding: 0.7em 1.25em;
+  font-size: 1.5625em;
+  margin: 0 auto;
 }
 
 .game {
@@ -34,6 +53,7 @@ h1 {
   display:flex;
   flex-wrap:wrap;
   margin:0 auto;
+  position: relative;
 }
 
 .hole {
@@ -66,4 +86,52 @@ h1 {
 
 .hole.up .mole {
   top:0;
+}
+
+.overlay-container {
+  position: absolute;
+  background-color: rgba(255,198,1, 0.5);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: none;
+  transition: all 300ms;
+}
+
+.overlay-container.is-active {
+  display: block;
+}
+
+.go-label, .time-up-label {
+  font-size: 24em;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transition: all 300ms;
+  transform: translate(-50%, -50%) scale(0.9);
+  opacity: 0;
+  text-align: center;
+}
+
+.overlay-container.is-active .go-label.visible, .overlay-container.is-active .time-up-label.visible {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.timer-display {
+  font-size: 5em;
+  font-family: monospace;
+  position: absolute;
+  right: -1.2em;
+  bottom: 50%;
+  transform: translateY(50%);
+}
+
+.progress-bar {
+  width: 90%;
+  height: 1em;
+  background-color: red;
+  position: relative;
 }
