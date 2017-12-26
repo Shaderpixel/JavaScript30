@@ -26,16 +26,66 @@
 
     // Some and Every Checks
     // Array.prototype.some() // is at least one person 19 or older?
+    const isAdult = people.some(person => {
+      const year = (new Date()).getFullYear();
+      return year - person.year >= 19;
+    });
+    console.log({isAdult});
+
+
     // Array.prototype.every() // is everyone 19 or older?
+    const allAdults = people.every(person => {
+      const year = (new Date()).getFullYear();
+      return year - person.year >= 19;
+    });
+    console.log({allAdults});
 
     // Array.prototype.find()
     // Find is like filter, but instead returns just the one you are looking for
     // find the comment with the ID of 823423
 
+    // const findComment = comments.find(function(comment) { return comment.id === 823423;})
+    const findComment = comments.find(comment => comment.id === 823423);
+    console.log({findComment});
+
     // Array.prototype.findIndex()
     // Find the comment with this ID
     // delete the comment with the ID of 823423
 
+    const findIndex = comments.findIndex(comment => comment.id === 823423);
+    console.log({findIndex});
+
+    //remove one item from index position by modifying the existing array
+    //comments.splice(findIndex, 1);
+
+    //create new array without the item 823423
+    const newComments = [
+    //popular redux method
+    //need to spread new items into the array otherwise the array will only have two elements, first element with just one item, and the second element is a nested array will have the remaining 3 elements.
+      ...comments.slice(0, findIndex),
+      ...comments.slice(findIndex + 1)
+    ];
+    console.table(newComments);
+
+
   </script>
 </body>
 </html>
+
+
+<!--
+  Lesson Learnt
+  1. declare and use object with parenthese (new Date()).getFullYear()
+  2. curly brackets around variable in console log will give more information
+  3. arrow function comes with implicit returns
+  4. spread operator is useful in preventing array items that is being added to a new array from being added as a single lump of nested array but added as individual array elements on the same level
+
+  The some() method tests whether at-least one element in the array passes the test implemented by the provided function. Returns true/false
+  The every() method tests whether all elements in the array pass the test implemented by the provided function. Returns true/false
+  The find() method returns the value of the first element in the array that satisfies the provided testing function. Otherwise undefined is returned.
+  See also the findIndex() method, which returns the index of a found element in the array instead of its value.
+  All methods takes callback functions that execute on each value in the array, taking three arguments: (e,i,a)
+
+  to remove items from an index position use splice(index, n)
+  to copy an array use slice() - The slice() method returns a shallow copy of a portion of an array into a new array object selected from begin to end (end not included). The original array will not be modified.
+-->
