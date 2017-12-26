@@ -5,6 +5,7 @@
   <title>Array Cardio 💪</title>
 </head>
 <body>
+  <h1>Array Cardio 💪</h1>
   <p><em>Psst: have a look at the JavaScript Console</em> 💁</p>
   <script>
     // Get your shorts on - this is an array workout!
@@ -29,70 +30,78 @@
 
     const people = ['Beck, Glenn', 'Becker, Carl', 'Beckett, Samuel', 'Beddoes, Mick', 'Beecher, Henry', 'Beethoven, Ludwig', 'Begin, Menachem', 'Belloc, Hilaire', 'Bellow, Saul', 'Benchley, Robert', 'Benenson, Peter', 'Ben-Gurion, David', 'Benjamin, Walter', 'Benn, Tony', 'Bennington, Chester', 'Benson, Leana', 'Bent, Silas', 'Bentsen, Lloyd', 'Berger, Ric', 'Bergman, Ingmar', 'Berio, Luciano', 'Berle, Milton', 'Berlin, Irving', 'Berne, Eric', 'Bernhard, Sandra', 'Berra, Yogi', 'Berry, Halle', 'Berry, Wendell', 'Bethea, Erin', 'Bevan, Aneurin', 'Bevel, Ken', 'Biden, Joseph', 'Bierce, Ambrose', 'Biko, Steve', 'Billings, Josh', 'Biondo, Frank', 'Birrell, Augustine', 'Black, Elk', 'Blair, Robert', 'Blair, Tony', 'Blake, William'];
 
+    //create an array from inventors object
+    const inventorsArray = Array.from(inventors);
+
     // Array.prototype.filter()
     // 1. Filter the list of inventors for those who were born in the 1500's
-    const bornFifties = inventors.filter(inventor => inventor.year >= 1500 && inventor.year < 1600)
-    console.log(bornFifties);
+    const born1500 = inventors.filter(inventor => (inventor.year >= 1500 && inventor.year < 1600));
+
+    console.table(born1500);
+
 
     // Array.prototype.map()
     // 2. Give us an array of the inventors' first and last names
-    const names = inventors.map(inventor => `${inventor.first} ${inventor.last}`);
-    console.log(names);
+    const fullName = inventors.map(inventor => `${inventor.first}  ${inventor.last}`);
+
+    console.log(fullName);
 
     // Array.prototype.sort()
     // 3. Sort the inventors by birthdate, oldest to youngest
-    const birthSort = inventors.sort((a,b) => a.year > b.year ? -1 : 1);
+    const sort = inventors.sort((a, b) => a.year>b.year? -1 : 1);
 
-    console.table(birthSort);
+    console.table(sort);
 
 
     // Array.prototype.reduce()
     // 4. How many years did all the inventors live?
-    const total = inventors.reduce((sum, inventor) => {
-      return sum += (inventor.passed - inventor.year);
-    }, 0);
+    const total = inventors.reduce((total, inventor) => total += (inventor.passed - inventor.year), 0);
 
     console.log(total);
 
     // 5. Sort the inventors by years lived
-    const ageSort = inventors.sort((last , next) => {
-      const lastAge = last.passed - last.year;
-      const nextAge  = next.passed - next.year;
+    const yearsSort = inventors.sort((last, next) => {
+      lastGuy = last.passed - last.year;
+      nextGuy = next.passed - next.year;
 
-      return (lastAge > nextAge) ? 1 : -1;
-    });
+      return lastGuy > nextGuy ? 1 : -1;
+    })
 
-    console.table(ageSort);
+    console.table(yearsSort);
 
     // 6. create a list of Boulevards in Paris that contain 'de' anywhere in the name
     // https://en.wikipedia.org/wiki/Category:Boulevards_in_Paris
-    const listItems = Array.from(document.querySelectorAll('.mw-category-group li a'));
-    const listItemTexts = listItems
-                            .map(listItem => listItem.text)
-                            .filter(listItemText => listItemText.includes(' de '));
-    console.log(listItemTexts);
+
+
     // 7. sort Exercise
     // Sort the people alphabetically by last name
-    const sortedLast = people.sort((a,b) => {
-      [aFirst, aLast] = a.split(",");
-      [bFirst, bLast] = b.split(",");
+    const peep = people.sort((a,b) => {
+      [aLast, aFirst] = a.split(", ");
+      [bLast, bFirst] = b.split(", ");
       return aLast > bLast ? 1 : -1;
     });
-    console.log(sortedLast);
+
+    console.log(peep);
+
 
     // 8. Reduce Exercise
     // Sum up the instances of each of these
-    console.clear();
     const data = ['car', 'car', 'truck', 'truck', 'bike', 'walk', 'car', 'van', 'bike', 'walk', 'car', 'van', 'car', 'truck' ];
 
-    const count = data.reduce((sum, vehicleType) => {
-      if(!sum[vehicleType]) {sum[vehicleType] = 0;}
-      sum[vehicleType] ++;
-      return sum;
-    }, {});
-    //initial value of reduce can be an empty array or object
-    //sum must be returned
-    console.dir(count);
+    const vehicle = data.reduce((a,b) => {
+
+      if (!a[b]) {
+        a[b] = 0;
+      }
+
+      a[b] ++;
+
+      return a;
+    },{})
+
+    console.log(vehicle);
+
+
   </script>
 </body>
 </html>

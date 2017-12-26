@@ -182,6 +182,28 @@
     </li>
   </ul>
 <script>
+  const timeNodes = Array.from(document.querySelectorAll('[data-time]'));
+  const seconds = timeNodes
+    // .map(timeNode => timeNode.dataset.time)
+    // .map(timeCode => {
+    //   //split returns an array which is then mapped and have parseFloat called against every item in that array
+    //   const [mins, secs] = timeCode.split(':').map(parseFloat);
+    //   return (mins * 60) + secs;
+    // })
+    .reduce((total, timeCode) => {
+      const [mins, secs] = timeCode.dataset.time.split(':').map(parseFloat);
+      return total += mins * 60 + secs;
+    },0);
+
+let secondsLeft = seconds;
+
+const hours = Math.floor(secondsLeft / 3600);
+secondsLeft = secondsLeft % 3600;
+
+const minutes = Math.floor(secondsLeft / 60);
+secondsLeft = secondsLeft % 60;
+
+console.log(`Total time is ${hours}:${minutes < 10 ? 0 : ''}${minutes}:${secondsLeft < 10 ? 0 : ''}${secondsLeft}`);
 </script>
 </body>
 </html>

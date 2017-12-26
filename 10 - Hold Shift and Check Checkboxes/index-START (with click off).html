@@ -106,8 +106,19 @@
   //write your functions
   function handleCheck(e) {
     let inBetween = false;
-    if (e.shiftKey && this.checked) {
-      //loop over all inputs
+
+    //if input is checked with no lastChecked was set
+    if(e.shiftKey && this.checked && lastChecked === undefined) {
+      lastChecked = this;
+      return;
+    }
+
+    //if checked item is same as the lastChecked input do nothing
+    if (e.shiftKey && this.checked && this == lastChecked) { console.log('cond1'); }
+    //if new input is checked with shift held down loop through all and check all inputs in between
+    else if (e.shiftKey && this.checked) {
+      console.log('cond2');
+      //loop over all inputs to check
       checkboxes.forEach(checkbox => {
         if (checkbox === this || checkbox === lastChecked) {
           inBetween = !inBetween;
@@ -116,6 +127,22 @@
       if (inBetween) checkbox.checked = true;
       });
     }
+    //if new input is unchecked with shift held down, loop through all and uncheck all inputs in between
+    else if (e.shiftKey && !this.checked) {
+      console.log('cond3');
+      //loop over all inputs to uncheck
+      lastChecked.checked = false;
+      checkboxes.forEach(checkbox => {
+        if (checkbox === this || checkbox === lastChecked) {
+          inBetween = !inBetween;
+        }
+
+      if (inBetween) checkbox.checked = false;
+      });
+    }
+
+
+
     lastChecked = this;
   }
 

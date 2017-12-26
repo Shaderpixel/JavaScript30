@@ -35,6 +35,40 @@
   </div>
 
 <script>
+    const slider = document.querySelector('.items');
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        slider.classList.add('active');
+        startX = e.pageX - slider.offsetLeft; //in case position of slider is has been moved
+        scrollLeft = slider.scrollLeft; //get current horizontal scroll position
+    });
+
+    slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.classList.remove('active');
+    });
+
+    slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.classList.remove('active');
+    });
+
+    slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+
+        e.preventDefault(); //prevent action such as text highlighting
+
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 3; //  increase movement speed
+        slider.scrollLeft = scrollLeft - walk;
+
+        console.log(e.detail);
+    });
+    //how is it possible to calculate rate of mouse move?? how to increase walk and transition speed base on how fast we move the cursor?
 </script>
 
   </body>

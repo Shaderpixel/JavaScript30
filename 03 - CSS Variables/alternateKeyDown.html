@@ -66,24 +66,19 @@
 
     //declare functions
     function updateValue(e) {
-      const suffix = e.target.dataset.sizing || '';
-      console.log(e.target.name);
-      document.documentElement.style.setProperty(`--${e.target.name}`, `${e.target.value}${suffix}`);
+      if (!mouseDown) return;
+      const suffix = this.dataset.sizing || '';
+      console.log(this.name);
+      document.documentElement.style.setProperty(`--${this.name}`, `${this.value}${suffix}`);
     }
 
 
     //declare event handlers
-    inputs.forEach(input => input.addEventListener('mousedown', () => {
-      mouseDown = true;
-      console.log(mouseDown);
-    }));
-    inputs.forEach(input => input.addEventListener('mouseup', () => {
-      mouseDown = false;
-      console.log(mouseDown);
-    }));
+    inputs.forEach(input => input.addEventListener('mousedown', () => mouseDown = true));
+    inputs.forEach(input => input.addEventListener('mouseup', () => mouseDown = false));
 
-    inputs.forEach(input => input.addEventListener('change',  updateValue));
-    inputs.forEach(input => input.addEventListener('mousemove', (e) => mouseDown && updateValue(e)));
+    // inputs.forEach(input => input.addEventListener('change',  updateValue));
+    inputs.forEach(input => input.addEventListener('mousemove', updateValue));
 
 
   </script>

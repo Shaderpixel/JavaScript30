@@ -149,7 +149,7 @@
     background: #fff;
     border-radius: 4px;
     box-shadow: 0 50px 100px rgba(50,50,93,.1), 0 15px 35px rgba(50,50,93,.15), 0 5px 15px rgba(0,0,0,.1);
-    transition:all 0.3s, opacity 0.1s, transform 0.2s;
+    transition:all 0.2s, opacity 0.1s, transform 0.2s; /* different transition timing for all causes the the arrow have a elastic effect*/
     transform-origin: 50% 0;
     display: flex;
     justify-content: center;
@@ -214,6 +214,44 @@
 </style>
 
 <script>
+  const triggers = document.querySelectorAll('.cool > li');
+  const background = document.querySelector('.dropdownBackground');
+  const nav = document.querySelector('.top');
+
+  function handleEnter() {
+    this.classList.add('trigger-enter');
+    //scope is defined by a function, so this changes when it is called in a different function, however when using arrow function, the scope is inherited from the parent function (closures?)
+    //shortcircuiting && operator, setTimeout event could fire after the mouse has already left the trigger, adding the trigger-enter-active
+    setTimeout(() => this.classList.contains('trigger-enter') && this.classList.add('trigger-enter-active'), 150);
+    background.classList.add('open');
+
+    const dropdown = this.querySelector('.dropdown');
+    const dropdownCoords = dropdown.getBoundingClientRect();
+    //can't use dropdown.offsetTop because it will return the distance of the current element relative (.dropdown) to the top of the offsetParent node (trigger li).
+    const navCoords = nav.getBoundingClientRect(); //get the position of nav in case something pushes the nav out of position
+    //in this case navCoords.top and nav.offsetTop values is same because the offsetParent node is the body and navCoords.top is in relative to the top of the viewport
+
+    const coords = {
+      height : dropdownCoords.height,
+      width : dropdownCoords.width,
+      top: dropdownCoords.top - navCoords.top, //offset dropdownCoords by the position of nav if it gets moved
+      left: dropdownCoords.left  - navCoords.left //offset if theres changes to the nav parent element
+    };
+
+    background.style.setProperty('width', `${coords.width}px`);
+    background.style.setProperty('height', `${coords.height}px`);
+    background.style.setProperty('transform', `translate3d(${coords.left}px, ${coords.top}px, 0)`);
+  }
+
+  function handleLeave() {
+    this.classList.remove('trigger-enter-active');
+    setTimeout(() => this.classList.remove('trigger-enter'), 150);
+    background.classList.remove('open');
+  }
+
+  triggers.forEach(trigger => trigger.addEventListener('mouseenter', handleEnter));
+  triggers.forEach(trigger => trigger.addEventListener('mouseleave', handleLeave));
+
 </script>
 
 </body>

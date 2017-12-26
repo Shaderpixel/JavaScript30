@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Speech Detection</title>
+</head>
+<body>
+
+  <div class="words" contenteditable>
+  </div>
+
+<script>
+  window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  //declare variables
+  let weatherInfo;
+  let isFetching = false; //flag for checking if weather info is already being fetched
+  let p = document.createElement('p');
+  const words = document.querySelector('.words');
+  const recognition = new SpeechRecognition;
+
+  recognition.interimResults = true;
+  words.appendChild(p);
+
+
+  function debounce(func, wait = 20, immediate = true) {
+    var timeout;
+    return function() {
+      var context = this, args = arguments;
+      var later = function() {
+        timeout = null;
+        if (!immediate) func.apply(context, args);
+      };
+      var callNow = immediate && !timeout;
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+      if (callNow) func.apply(context, args);
+    };
+  }
+
+  function handleErrors(response) {
+    if (!response.ok) {
+      throw Error(response.statusText);
+    }
+    return response;
+  }
+
+  function displayWeatherInfo(data) {
+    // weather icons and conditions information can be found here: https://openweathermap.org/weather-conditions
+    //city list sample: http://bulk.openweathermap.org/sample/
+    console.log(data);
+    const weatherContainer =  document.createElement('div');
+    weatherContainer.classList.add('weather-container');
+    const weatherInfo = {
+      city: data.name,
+      country: data.sys.country, //how to get county? how to match against id?
+      temp: data.main.temp,
+      tempMin: data.main.temp_min,
+      tempMax: data.main.temp_max,
+      humidity: data.main.humidity,
+      pressure: data.main.pressure,
+      icon: data.weather[0].icon,
+      iconDesc: data.weather[0].main,
+      weather: data.weather[0].description,
+    }
+    const weatherHTML = `
+      <p>
+        <span class="city-name">${weatherInfo.city}, ${weatherInfo.country}</span>
+        <img class="weather-icon" src="http://openweathermap.org/img/w/${weatherInfo.icon}.png" alt="${weatherInfo.iconDesc} icon"><br/>
+        <span class="weather-temp">${weatherInfo.temp}°F</span>
+        <span class="weather-description">${weatherInfo.weather}</span>
+      </p>`;
+    console.log(weatherHTML);
+    weatherContainer.innerHTML = weatherHTML;
+    words.appendChild(weatherContainer);
+
+  }
+
+  //get the weather function makes call to the weather api?
+  function getTheWeather(coords) {
+    console.log('getting the weather');
+
+    //for forecast, change weather to forecast, see API for options https://openweathermap.org/api
+    const params = {
+      lat: coords.lat,
+      lon: coords.long,
+      unit: 'imperial', //fahrenheit
+      apiKey: 'b8edf510d33cf0f1380f025d7ceb0d1e',
+      type: 'accurate'
+    }
+    const endpoint = `http://api.openweathermap.org/data/2.5/weather?lat=${params.lat}&lon=${params.lon}&units=${params.unit}&type=${params.type}&APPID=${params.apiKey}`;
+
+    fetch(endpoint)
+      .then(handleErrors)
+      .then(response => response.json())
+      .then(data => displayWeatherInfo(data))
+      .catch(error => {console.error('Unable to retrieve weather data from API', error);});
+  }
+
+  //get the current coordinates
+  function getCoords() {
+    //use getCurrentPosition to get coords when needed vs watchPositon
+    navigator.geolocation.getCurrentPosition((data) => {
+      const coords = {
+        lat: data.coords.latitude,
+        long: data.coords.longitude
+      };
+      getTheWeather(coords);
+    }, (err) => {
+      alert(`${err.message}. Won't be able to sort results closest to you.`);
+      return false;
+    });
+  }
+
+
+  function checkTranscript(transcript) {
+    if (transcript.includes('get the weather')) {
+      getCoords();
+      //set isChecking flag to true
+    }
+  }
+
+  recognition.addEventListener('result', e => {
+    let transcript = Array.from(e.results)
+      .map(result => result[0])
+      .map(result => result.transcript)
+      .join('');
+    console.log(transcript);
+
+    //create new p element
+    p.textContent = transcript;
+
+    if(e.results[0].isFinal) {
+      p = document.createElement('p');
+      words.appendChild(p);
+      checkTranscript(transcript);
+    }
+
+  });
+
+  recognition.addEventListener('end', recognition.start);
+  recognition.start();
+
+  // add flag to check if an instance of retrieving the weather is already started use var name of isRetrieving = false;
+
+</script>
+
+
+  <style>
+    html {
+      font-size: 10px;
+    }
+
+    body {
+      background:#ffc600;
+      font-family: 'helvetica neue';
+      font-weight: 200;
+      font-size: 20px;
+    }
+
+    .words {
+      max-width:500px;
+      margin:50px auto;
+      background:white;
+      border-radius:5px;
+      box-shadow:10px 10px 0 rgba(0,0,0,0.1);
+      padding:1rem 2rem 1rem 5rem;
+      background: -webkit-gradient(linear, 0 0, 0 100%, from(#d9eaf3), color-stop(4%, #fff)) 0 4px;
+      background-size: 100% 3rem;
+      position: relative;
+      line-height:3rem;
+    }
+    p {
+      margin: 0 0 3rem;
+    }
+
+    .words:before {
+      content: '';
+      position: absolute;
+      width: 4px;
+      top: 0;
+      left: 30px;
+      bottom: 0;
+      border: 1px solid;
+      border-color: transparent #efe4e4;
+    }
+  </style>
+
+</body>
+</html>

@@ -1,0 +1,169 @@
+html {
+  box-sizing: border-box;
+  font-size: 10px;
+  background: #ffc600;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  padding: 0;
+  margin:0;
+  font-family: 'Amatic SC', cursive;
+}
+
+h1 {
+  text-align: center;
+  font-size: 10rem;
+  line-height:1;
+  margin-bottom: 0;
+}
+
+caption {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+}
+.scoreboard {
+  width: 600px;
+  height: 200px;
+  margin: 2em auto;
+  display: flex;
+  flex-flow: row wrap;
+  text-align: center;
+}
+
+.score {
+  background:rgba(255,255,255,0.2);
+  padding:0 3rem;
+  line-height:1;
+  border-radius:1rem;
+  flex: 1 0 100%;
+  margin-bottom: 1em;
+  font-size: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  perspective: 1000px;
+}
+
+.high-score {
+    position: absolute;
+    bottom: 0;
+    right: -10%;
+    background-color: teal;
+    padding: 0.1em;
+    border-radius: 5px;
+    color: #fff;
+    transform: rotateY(-20deg) rotateX(20deg) rotateZ(1deg);
+}
+
+.scoreboard progress {
+  width: 100%;
+}
+
+.game {
+  width:600px;
+  height:400px;
+  display:flex;
+  flex-wrap:wrap;
+  margin:2em auto;
+  position: relative;
+}
+
+.hole {
+  flex: 1 0 33.33%;
+  overflow: hidden;
+  position: relative;
+}
+
+.hole:after {
+  display: block;
+  background: url(dirt.svg) bottom center no-repeat;
+  background-size:contain;
+  content:'';
+  width: 100%;
+  height:70px;
+  position: absolute;
+  z-index: 2;
+  bottom:-30px;
+}
+
+.mole {
+  background:url('mole.svg') bottom center no-repeat;
+  background-size:60%;
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  height: 100%;
+  transition:all 0.2s; //reduced time going back down, to prevent multiple clicks
+}
+
+.hole.up .mole {
+  top:0;
+  transition:all 0.45s;
+}
+
+.hiScores {
+  width: 100%;
+  padding: 5%;
+  margin: 1em 0;
+  font-size: 16px;
+}
+
+.hiScores table {
+  width: 100%;
+  border: 1px solid;
+  background-color: #fff;
+}
+
+.hiScores table tr:not(:last-child) td, .hiScores table th {
+  border-bottom: 1px solid;
+}
+
+.overlay-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  font-size: 3rem;
+  background-color: rgba(0,0,0,0.5);
+  opacity: 0;
+  display: none;
+  transition: all 250ms ease-out;
+  font-size: 15rem;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  z-index: -1;
+}
+
+.overlay-container.visible {
+  display: flex;
+  z-index: 2;
+}
+
+.game-controls {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  height: 2em;
+  transition: all 250ms ease-out;
+  opacity: 1;
+  margin: 1em 0;
+}
+
+.game-controls.hide > * {
+  display: none;
+}
+
+.game-controls > * {
+  margin-left: 1em;
+}

@@ -39,6 +39,29 @@
 
 <button></button>
 <script>
+  const divs = document.querySelectorAll('div');
+
+  function logText(e) {
+    // e.stopPropagation(); //stop bubbling or capture
+    console.log(this.classList.value);
+  }
+  ////bubbling example, events will travel upwards to every parent level
+  divs.forEach(div => div.addEventListener('click', logText));
+
+  document.body.addEventListener('click', logText);
+
+  ////capture takes place before bubbling, where the trigger occured is stored, once capture is complete it will start firing off the trigger events from bottom back to top (bubbling)
+  //capture travels down, bubble travels up
+  //when capture is set to true, event is triggered on the way down not the default bubbling
+  //to do that we add an options object
+
+  // divs.forEach(div => div.addEventListener('click', logText, {capture:true}));
+
+  ////event stop propagation - prevents bubbling
+  //to do that add e.stopPropagation() in the callback function
+
+  ////once option - event triggers once and unbinds (same as removeEventListener) itself. Useful for buttons that should only be clicked once
+  // divs.forEach(div => div.addEventListener('click', logText, {once:true}));
 
 </script>
 </body>

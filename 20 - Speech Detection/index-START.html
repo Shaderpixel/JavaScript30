@@ -12,6 +12,38 @@
 <script>
   window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+  const recognition = new SpeechRecognition;
+  recognition.interimResults = true;
+
+  let p = document.createElement('p');
+  const words = document.querySelector('.words');
+  words.appendChild(p);
+
+  recognition.addEventListener('result', e => {
+    let transcript = Array.from(e.results)
+      .map(result => result[0])
+      .map(result => result.transcript)
+      .join('');
+    console.log(transcript);
+
+    if (transcript.includes('unicorn')) {
+      transcript = transcript.replace('unicorn', '🦄');
+    }
+
+    p.textContent = transcript;
+
+    //when transcript is finalized and appended, create new p element and ready for next voice set
+    if(e.results[0].isFinal) {
+      p = document.createElement('p');
+      words.appendChild(p);
+    }
+
+  });
+
+  recognition.addEventListener('end', recognition.start);
+  recognition.start();
+
+  // hook this up to additional task such as checking the weather but need to debounce it so that it doesn't run too often
 
 </script>
 

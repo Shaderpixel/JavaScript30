@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Whack A Mole!</title>
+  <link href='https://fonts.googleapis.com/css?family=Amatic+SC:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="style-extra-features.css">
+</head>
+<body>
+
+  <h1>Whack-a-mole!</h1>
+  <div class="hiScores">
+    <table id="hiScoreTable">
+      <caption>High Scores</caption>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="3" style="text-align: center;">No data at this time</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="game-controls">
+    <form name="customForm" id="custom">
+      <input required type="text" name="playerName" placeholder="Enter Player Name">
+    </form>
+    <button id="startGame">Start!</button>
+  </div>
+  <div class="scoreboard">
+    <span class="score">0</span>
+    <progress class="progress-bar"></progress>
+  </div>
+
+  <div class="game">
+    <div class="hole hole1">
+      <div class="mole"></div>
+    </div>
+    <div class="hole hole2">
+      <div class="mole"></div>
+    </div>
+    <div class="hole hole3">
+      <div class="mole"></div>
+    </div>
+    <div class="hole hole4">
+      <div class="mole"></div>
+    </div>
+    <div class="hole hole5">
+      <div class="mole"></div>
+    </div>
+    <div class="hole hole6">
+      <div class="mole"></div>
+    </div>
+
+    <div class="overlay-container">
+      <span class="go-label"></span>
+      <span class="time-up-label"></span>
+    </div>
+  </div>
+
+<script>
+//*************************
+//Extra Features:
+//1.progress bar
+//2.Game countdown and time up indicator
+//7.Required player name to assoicate with score
+//3.Local Storage for past game high scores
+//4.High Score Board, compare new score against top 3 past-scores
+//5.New high score indicator
+//6.Hide game controls when game starts
+//*************************
+
+//*************************
+//Declare Global Variables
+//*************************
+  const startGameButton = document.getElementById('startGame');
+  const holes = document.querySelectorAll('.hole');
+  const scoreBoard = document.querySelector('.score');
+  const moles = document.querySelectorAll('.mole');
+  const customForm = document.customForm;
+  const hiScoreTable = document.getElementById('hiScoreTable');
+  const hiScoreTableBody = hiScoreTable.querySelector('tbody');
+  const overlayContainer = document.querySelector('.overlay-container');
+  const goLabel = overlayContainer.querySelector('.go-label');
+  const timeUpLabel = overlayContainer.querySelector('.time-up-label');
+  const gameControls = document.querySelector('.game-controls');
+  const progressBar = document.querySelector('.progress-bar');
+  const gameArea = document.querySelector('.game');
+  const gameTime = 10000;
+  let startTimer, progressTimer;
+  let isRunning = false; //flag to prevent more than one instance of the game is running
+  let lastHole, playerName;
+  let timeUp = false;
+  let score = 0;
+  let hiScores = JSON.parse(localStorage.getItem('hiScores')) || [];
+
+
+//*************************
+//Write Functions
+//*************************
+  function windowScrollTo(to, duration) {
+    if (duration < 0) return;
+    let ticker;
+    let distanceY = to.offsetTop - (window.scrollY + window.innerHeight) + to.offsetHeight;
+    let walkYPerTick = distanceY / duration * 10;
+    let distanceX, walkXPerTick;
+
+    //if there is horizontal scrolling
+    if(gameArea.scrollWidth > window.innerWidth) {
+      distanceX = to.offsetLeft - window.scrollX;
+      walkXPerTick = distanceX / duration * 10;
+      console.log(distanceX,walkXPerTick);
+    }
+
+    ticker = setInterval(() => {
+      distanceY = to.offsetTop - (window.scrollY + window.innerHeight) + to.offsetHeight;
+
+      if(gameArea.scrollWidth > window.innerWidth) {
+        console.log('here');
+        //horizontal scrolling
+        distanceX = to.offsetLeft - window.scrollX;
+
+        //both not reached
+        if ((Math.abs(distanceY) > Math.abs(walkYPerTick)) && (Math.abs(distanceX) > Math.abs(walkXPerTick))) {
+          window.scrollTo(window.scrollX + walkXPerTick, window.scrollY + walkYPerTick);
+        }
+        //y has reached
+        else if ((Math.abs(distanceY) < Math.abs(walkYPerTick)) && (Math.abs(distanceX) < Math.abs(walkXPerTick))) {
+          window.scrollTo(window.scrollX + walkXPerTick, to.offsetTop);
+        }
+        //x has reached
+        else if ((Math.abs(distanceX) < Math.abs(walkXPerTick)) && (Math.abs(distanceY) < Math.abs(walkYPerTick))) {
+          window.scrollTo(to.offsetLeft, window.scrollY + walkYPerTick);
+        } else { //both reached
+          window.scrollTo(to.offsetLeft, to.offsetTop);
+          clearInterval(ticker);
+          return;
+        }
+      } else {
+        //just vertical scrolling
+        console.log(Math.abs(distanceY), Math.abs(walkYPerTick))
+        if (Math.abs(distanceY) < Math.abs(walkYPerTick)) {
+          clearInterval(ticker);
+          return;
+        }
+        window.scrollTo(0, window.scrollY + walkYPerTick);
+      }
+    }, 10);
+  }
+
+  function showOverlay() {
+    overlayContainer.classList.add('visible');
+    setTimeout(() => overlayContainer.style.opacity = 1, 30);
+  }
+
+  function hideOverlay() {
+    overlayContainer.style.opacity = null;
+    setTimeout(() => overlayContainer.classList.remove('visible'), 250);
+  }
+
+  function showControls() {
+    gameControls.classList.remove('hide');
+    setTimeout(() => gameControls.style.opacity = 1, 30);
+  }
+
+  function hideControls() {
+    gameControls.style.opacity = 0;
+    setTimeout(() => gameControls.classList.add('hide'), 250);
+  }
+
+  function updateProgressBar() {
+    clearInterval(progressTimer);
+    const now = Date.now();
+    const then = now + gameTime;
+    progressTimer = setInterval(() => {
+      const secondsLeft = Math.round((then - Date.now()) / 1000)
+      if (secondsLeft < 0) {
+        clearInterval(progressTimer);
+        return;
+      }
+      progressBar.value = secondsLeft;
+    }, 1000);
+  }
+
+  function gameOver() {
+    showOverlay();
+    timeUpLabel.textContent = 'Game Over';
+    setTimeout(() => {
+      hideOverlay();
+      timeUpLabel.textContent = '';
+    }, 2000);
+  }
+
+  function randomTime(min, max) {
+    return Math.round(Math.random() * (max - min) + min);
+  }
+
+  function randomHole(holes) {
+    const idx = Math.floor(Math.random() * holes.length);
+    const hole = holes[idx];
+
+    if (hole === lastHole) {
+      return randomHole(holes); //return function itself to get recursive calls
+      //chrome has a tiny arrow on console that indicates that its a return
+    }
+
+    lastHole = hole;
+
+    return hole;
+  }
+
+  function peep() {
+    const time = randomTime(200, 1000);
+    const hole = randomHole(holes);
+
+    hole.classList.add('up');
+    setTimeout(() => {
+      hole.classList.remove('up');
+
+      if (!timeUp) peep();
+
+    }, time);
+  }
+
+  function storeHiScores() {
+    localStorage.setItem('hiScores', JSON.stringify(hiScores));
+  }
+
+  function displayHiScores() {
+    let i = 0;
+    const scoreHTML = hiScores.map(hiScore => {
+      i ++;
+      return `<tr><td>${i}</td><td>${hiScore.player}</td><td>${hiScore.score}</td></tr>`;
+    }).join('');
+    hiScoreTableBody.innerHTML = scoreHTML;
+  }
+
+  function setHiScores() {
+    const newScore = {
+      player: playerName,
+      score: score
+    }
+
+    if (hiScores.length) {
+      if (newScore.score > hiScores[0].score) {
+        const highScoreHTML = document.createElement('span');
+        highScoreHTML.classList.add('high-score');
+        highScoreHTML.textContent = 'New High Score';
+        scoreBoard.appendChild(highScoreHTML);
+      }
+    }
+
+    hiScores.push(newScore);
+
+    hiScores.sort((a,b) => {
+      scoreA = a.score;
+      scoreB = b.score;
+      return scoreA > scoreB ? -1 : 1; //sort descending
+    })
+
+    if(hiScores.length > 3) {
+      hiScores.splice(3); //we only want top 3 scores
+    }
+
+    storeHiScores();
+    displayHiScores();
+  }
+
+  function startGame() {
+    clearInterval(startTimer);
+    const now = Date.now();
+    const then = now + 3000;
+    windowScrollTo(gameArea, 350);
+    showOverlay();
+    goLabel.textContent = '3';
+    startTimer = setInterval(() => {
+      const secondsLeft = Math.round((then - Date.now()) / 1000);
+
+
+      goLabel.textContent = secondsLeft > 0 ? secondsLeft : 'Go!';
+
+      if(secondsLeft < 0) {
+        clearInterval(startTimer);
+        hideOverlay();
+        goLabel.textContent = '';
+        updateProgressBar();
+        peep();
+
+        setTimeout(() => {
+          timeUp = true;
+          gameOver();
+          isRunning = false;
+          setHiScores();
+          showControls();
+        }, gameTime);
+
+
+        return;
+      }
+    }, 1000);
+  }
+
+  function getReady() {
+    if (isRunning) return; //prevent game from running again while its running
+    scoreBoard.textContent = 0;
+    timeUp = false;
+    score = 0;
+    hideControls();
+    startGame();
+    isRunning = true;
+    progressBar.value = gameTime / 1000;
+  }
+
+  function bonk(e) {
+    if (!e.isTrusted) return; //cheater
+    score ++;
+    this.classList.remove('up');
+    scoreBoard.textContent = score;
+  }
+
+  function checkName() {
+    playerName = customForm.playerName.value.trim();
+    //need to trim
+    if (playerName.length !== 0) {
+      getReady();
+      customForm.reset();
+    } else {
+      alert('You need to enter a name to play.');
+      return;
+    }
+  }
+
+//*************************
+//Attach Event Handlers
+//*************************
+  moles.forEach(mole => mole.addEventListener('click', bonk));
+  customForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    checkName();
+  });
+  startGameButton.addEventListener('click', checkName);
+
+//*************************
+//Run on Load
+//*************************
+ //show hiScores if there is any in localStorage
+ if (hiScores.length) {
+  displayHiScores();
+ }
+ //set progressBar max value
+ progressBar.max = gameTime / 1000;
+
+
+
+</script>
+</body>
+</html>

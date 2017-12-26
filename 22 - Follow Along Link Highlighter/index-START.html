@@ -10,7 +10,7 @@
     <nav>
       <ul class="menu">
         <li><a href="">Home</a></li>
-        <li><a href="">Order Status</a></li>
+        <li><a hkbref="">Order Status</a></li>
         <li><a href="">Tweets</a></li>
         <li><a href="">Read Our History</a></li>
         <li><a href="">Contact Us</a></li>
@@ -27,6 +27,20 @@
 
   <script>
     // 👀👀👀👀👀👀👀👀👀👀👀👀👀👀👀
+    const triggers = document.querySelectorAll('a');
+    const highlight = document.createElement('span');
+    highlight.classList.add('highlight');
+    document.body.append(highlight);
+
+    function highlightLink() {
+      const linkCoords = this.getBoundingClientRect();
+      console.log(linkCoords);
+      highlight.style.width = `${linkCoords.width}px`;
+      highlight.style.height = `${linkCoords.height}px`;
+      highlight.style.transform = `translate3d(${linkCoords.x + window.scrollX}px, ${linkCoords.y + window.scrollY}px, 0)`;
+    }
+
+    triggers.forEach(trigger => trigger.addEventListener('mouseenter', highlightLink));
   </script>
 </body>
 </html>

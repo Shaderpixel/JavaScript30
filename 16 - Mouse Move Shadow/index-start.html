@@ -26,15 +26,59 @@
     justify-content: center;
     align-items: center;
     color:black;
+    transition: all 300ms ease-out;
   }
 
   h1 {
     text-shadow: 10px 10px 0 rgba(0,0,0,1);
     font-size: 100px;
+    transition: all 300ms ease-out;
   }
   </style>
 
 <script>
+  //declare variables
+  const hero = document.querySelector('.hero');
+  const text = hero.querySelector('h1');
+  const walk = 200; //200px
+  let blur = 0;
+
+  //create functions
+  function shadow(e) {
+    // destructuring binding
+    // const [width, height] = [hero.offsetWidth, hero.offsetHeight];
+    // or
+    const {offsetWidth : width, offsetHeight : height} = hero;
+    let {offsetX: x, offsetY : y} = e;
+    // even if we are listening on hero, information will reset when hovering over child elements of targetted element, hence need to normalize
+    // console.log( this, e.target);
+    if (this !== e.target) {
+      x = x + e.target.offsetLeft;
+      y = y + e.target.offsetTop;
+      blur += 5;
+    } else {
+      blur = 0;
+    }
+    //offset based on walk so that value is always between +ve walk/2 and -ve walk/2
+    const xWalk = Math.round((x / width * walk) - (walk / 2));
+    const yWalk = Math.round((y / height * walk) - (walk / 2));
+
+    text.style.textShadow = `
+      ${xWalk}px ${yWalk}px ${blur}px red,
+      ${xWalk * -1}px ${yWalk}px ${blur}px teal,
+      ${xWalk}px ${yWalk * -1}px ${blur}px violet,
+      ${yWalk * -1}px ${xWalk}px ${blur}px grey
+
+    `;
+
+    console.log({xWalk, yWalk});
+  }
+
+  //attach event listeners
+  hero.addEventListener('mousemove', shadow);
+
 </script>
 </body>
 </html>
+
+<!-- check if using accelerometer how will that work -->

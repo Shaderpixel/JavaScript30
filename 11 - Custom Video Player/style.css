@@ -102,6 +102,34 @@ body {
   background:#ffc600;
   flex:0;
   flex-basis:50%;
+  position: relative;
+  z-index: 2;
+}
+
+.buffer__filled {
+  position: absolute;
+  height: 100%;
+  width: 100px;
+  background-color: red;
+  z-index: 1;
+}
+
+// .progress__filled::after {
+//   content: '';
+//   width: 0;
+//   background: red;
+//   height: 100%;
+//   position: absolute;
+//   right: 0;
+//   transform: translateX(100%);
+// }
+
+.fullScreen {
+  flex: 0.25;
+}
+
+.fullScreen svg{
+  width: 1.56em;
 }
 
 /* unholy css to style input type="range" */

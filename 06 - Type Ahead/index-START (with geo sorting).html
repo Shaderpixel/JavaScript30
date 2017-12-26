@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Type Ahead 👀</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <style>
+    mark {
+      background-color: #bada88;
+    }
+    .hidden {
+      display: none;
+      visibility:hidden;
+    }
+    .loader {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 500ms;
+    }
+    .loader svg {
+      width: 20%;
+      height: 20%;
+    }
+    .fadeout {
+      opacity: 0;
+    }
+    form {
+      opacity: 0;
+      transition: opacity 500ms ease-out;
+    }
+    form.active {
+      opacity: 1;
+    }
+  </style>
+  <div class="loader">
+    <svg width="45" height="45" viewBox="0 0 45 45" xmlns="http://www.w3.org/2000/svg" stroke="#fff">
+        <g fill="none" fill-rule="evenodd" transform="translate(1 1)" stroke-width="2">
+            <circle cx="22" cy="22" r="6" stroke-opacity="0">
+                <animate attributeName="r"
+                     begin="1.5s" dur="3s"
+                     values="6;22"
+                     calcMode="linear"
+                     repeatCount="indefinite" />
+                <animate attributeName="stroke-opacity"
+                     begin="1.5s" dur="3s"
+                     values="1;0" calcMode="linear"
+                     repeatCount="indefinite" />
+                <animate attributeName="stroke-width"
+                     begin="1.5s" dur="3s"
+                     values="2;0" calcMode="linear"
+                     repeatCount="indefinite" />
+            </circle>
+            <circle cx="22" cy="22" r="6" stroke-opacity="0">
+                <animate attributeName="r"
+                     begin="3s" dur="3s"
+                     values="6;22"
+                     calcMode="linear"
+                     repeatCount="indefinite" />
+                <animate attributeName="stroke-opacity"
+                     begin="3s" dur="3s"
+                     values="1;0" calcMode="linear"
+                     repeatCount="indefinite" />
+                <animate attributeName="stroke-width"
+                     begin="3s" dur="3s"
+                     values="2;0" calcMode="linear"
+                     repeatCount="indefinite" />
+            </circle>
+            <circle cx="22" cy="22" r="8">
+                <animate attributeName="r"
+                     begin="0s" dur="1.5s"
+                     values="6;1;2;3;4;5;6"
+                     calcMode="linear"
+                     repeatCount="indefinite" />
+            </circle>
+        </g>
+    </svg>
+  </div>
+  <form class="search-form hidden">
+    <input type="text" class="search" placeholder="City or State">
+    <ul class="suggestions">
+      <li>Filter for a city</li>
+      <li>or a state</li>
+    </ul>
+  </form>
+
+<script>
+const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+const searchInput = document.querySelector('.search');
+const suggestions = document.querySelector('.suggestions');
+const loader = document.querySelector('.loader');
+const form = document.querySelector('form');
+const suggestionsPlaceholder = suggestions.innerHTML;
+const cities = [];
+let currentLat;
+let currentLong;
+
+
+fetch(endpoint)
+  .then(blob => blob.json())
+  .then(data => cities.push(...data));
+
+
+function numberWithCommas(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+//get distance in km between two coords
+function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+  var dLon = deg2rad(lon2-lon1);
+  var a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  var d = R * c; // Distance in km
+  return d;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180);
+}
+
+function findMatches(wordToMatch, cities) {
+  const filterResults = cities.filter(place => {
+    const regex = new RegExp(wordToMatch, 'gi');
+
+    return place.city.match(regex) || place.state.match(regex);
+  });
+
+  console.log({currentLat, currentLong});
+  if (currentLat === undefined || currentLong === undefined) {
+    return filterResults;
+  } else {
+    //if current lat & long are present sort filterResults before returning them
+    return filterResults.sort((a ,b) => {
+      const aDist = getDistanceFromLatLonInKm(currentLat, currentLong, a.latitude, a.longitude);
+      const bDist = getDistanceFromLatLonInKm(currentLat, currentLong, b.latitude, b.longitude);
+
+      return (aDist > bDist) ? 1 : -1;
+
+    });
+  }
+}
+
+
+function displayMatches() {
+  if (this.value !== "") {
+    const matchArray = findMatches(this.value, cities);
+    const html = matchArray
+                    .map(place => {
+                      const regex = new RegExp(this.value, 'gi');
+                      const city = place.city.replace(regex, `<mark>${this.value}</mark>`);
+                      const state = place.state.replace(regex, `<mark>${this.value}</mark>`);
+
+                      return `
+                        <li>
+                          <span class="name">${city}, ${state}</span>
+                          <span class="population">${numberWithCommas(place.population)}</span>
+                        </li>
+                      `})
+                    .join('');
+
+    suggestions.innerHTML = html;
+  } else {
+    suggestions.innerHTML = suggestionsPlaceholder;
+  }
+}
+
+//show the form when it is ready
+function showForm(e) {
+  if (e.propertyName =="opacity") {
+    loader.classList.add('hidden');
+    form.classList.remove('hidden');
+    setTimeout(() => form.classList.add('active'), 20) ;
+    searchInput.addEventListener('input', displayMatches);
+  }
+}
+
+//getCurrentPosition and watchPosition are async
+console.time('fetching data');
+navigator.geolocation.watchPosition((data) => {
+    console.time(data);
+    console.timeEnd('fetching data');
+    currentLat = data.coords.latitude;
+    currentLong = data.coords.longitude;
+
+    loader.classList.add('fadeout');
+    loader.addEventListener('transitionend', showForm);
+
+  }, (err) => {
+    alert(`${err.message}. Won't be able to sort results closest to you.`);
+
+    loader.classList.add('fadeout');
+    loader.addEventListener('transitionend', showForm);
+  });
+
+</script>
+  </body>
+</html>
