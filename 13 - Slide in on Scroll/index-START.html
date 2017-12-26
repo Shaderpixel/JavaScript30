@@ -58,6 +58,34 @@
       };
     }
 
+    const sliderImages = document.querySelectorAll('.slide-in');
+
+    function checkSlide(e) {
+      sliderImages.forEach(sliderImage => {
+
+        //current scroll position from the bottom of viewport less half of image height
+        const slideInAt = (window.scrollY + window.innerHeight) - (sliderImage.height / 2);
+
+        //this gives the position of the image bottom on the document
+        const imageBottom = sliderImage.offsetTop + sliderImage.height;
+
+        //----if conditions to check for where to make image appear
+        //check to see if we have scrolled into the image
+        const isHalfShown = slideInAt > sliderImage.offsetTop;
+        //check to see if we have the image is still in view
+        const isNotScrolledPast = window.scrollY < imageBottom;
+
+        // isHalfShown && isNotScrolledPast ? sliderImage.classList.toggle('active') : sliderImage.classList.toggle('active')
+        if (isHalfShown && isNotScrolledPast) {
+          sliderImage.classList.add('active');
+        } else {
+          sliderImage.classList.remove('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', debounce(checkSlide));
+
   </script>
 
   <style>
@@ -118,3 +146,11 @@
 
 </body>
 </html>
+<!--
+  Lesson Learnt
+  1. The debounce function only makes the checkSlide function run every 20ms
+  2. window.scrollY gives the current scrolling position from the top of the window and window.innerHeight gives the value of the viewport height combining the two will give the position at the bottom of the screen
+  3. window scroll value that is constantly recalculated in the event that if something else is added to the page that readust document length
+
+  Read up requestAnimationFrame and how does it tie in with debounce again?
+ -->
