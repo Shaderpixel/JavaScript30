@@ -26,9 +26,142 @@
   </div>
 
 <script>
+  //----declare our variables
+  const wrapper = document.querySelector('.wrapper');
   const addItems = document.querySelector('.add-items');
   const itemsList = document.querySelector('.plates');
-  const items = [];
+  const items = JSON.parse(localStorage.getItem('items')) || []; //will try to get the items value from localStorage and if it doesn't exist then fallback to an empty array
+
+  //----write our functions
+  function generateUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+  });}
+
+  function e1() {
+    var u='',i=0;
+    while(i++<36) {
+      var c='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'[i-1],r=Math.random()*16|0,v=c=='x'?r:(r&0x3|0x8);
+      u+=(c=='-'||c=='4')?c:v.toString(16);
+    }
+    return u;
+  }
+
+  function addItem(e) {
+    e.preventDefault();
+    const text = (this.querySelector('[name="item"]')).value;
+    const item = {
+      text, //ES6 object short notation
+      done: false,
+      uid: generateUID()
+    };
+
+    //add new item into items array, make it appear on page, save the entire items array into localStorage and then reset text input
+    items.push(item);
+    // populateList(items, itemsList);
+    appendItem(items, item.uid, itemsList);
+    localStorage.setItem('items', JSON.stringify(items));
+    this.reset();
+  }
+
+  function populateList(plates = [], platesList) {
+    platesList.innerHTML = plates.map((plate, i) => {
+      return `
+        <li>
+          <input type = "checkbox" data-index=${i} id="item${i}" ${plate.done ? 'checked' : ''}/>
+          <label for="item${i}">${plate.text}</label>
+        </li>
+      `;
+    }).join('');
+
+    //if there are items inside plates and edit buttons doesn't exist, add edit buttons
+
+    if (plates.length) {
+      addEditButtons();
+    }
+  }
+
+  function appendItem(plates = [],uid = "", platesList) {
+    //uid to determine index of newest item to be added to list
+    const i = plates.findIndex(plate => {
+      return plate.uid == uid;
+    });
+
+    const newListItem = document.createElement('li');
+
+    newListItem.innerHTML = `
+          <input type = "checkbox" data-index=${i} id="item${i}" ${plates[i].done ? 'checked' : ''}/>
+          <label for="item${i}">${plates[i].text}</label>
+      `;
+    platesList.appendChild(newListItem);
+
+
+  }
+
+  function addEditButtons() {
+    if (!document.querySelector('.edit-list')) {
+      const editForm = document.createElement('form');
+      editForm.classList.add('edit-list');
+      editForm.innerHTML = `
+        <input type="button" name="clear-list" value="Clear List">
+        <input type="button" name="check-all" value="Check All">
+        <input type="button" name="uncheck-all" value="Uncheck All">
+      `;
+      const parentNode = addItems.parentNode;
+      parentNode.insertBefore(editForm, addItems.nextSibling);
+    }
+  }
+
+  function removeEditButtons() {
+    const editForm = document.querySelector('.edit-list');
+    editForm.remove();
+  }
+
+  function emptyLocalStorage() {
+    //remove key value of items from local storage
+    localStorage.removeItem('items');
+    items.splice(0,items.length);
+    populateList(items, itemsList);
+    removeEditButtons();
+  }
+
+  function toggleDone(e) {
+    if(!e.target.matches('input')) return; //skip this unless its an input
+    const el = e.target;
+    const index = el.dataset.index;
+    items[index].done = !items[index].done;
+    localStorage.setItem('items', JSON.stringify(items));
+    populateList(items, itemsList);
+    console.table(items);
+  }
+
+  function checkAll(done) {
+    items.forEach(item => {
+      item.done = done;
+    });
+    localStorage.setItem('items', JSON.stringify(items));
+    populateList(items, itemsList);
+    console.table(items);
+  }
+
+  function toggleEdit(e) {
+    if (e.target.name && e.target.name.includes('clear-list')) {
+      emptyLocalStorage();
+    } else if (e.target.name && e.target.name.includes('uncheck-all')) {
+      checkAll(false);
+    } else if (e.target.name && e.target.name.includes('check-all')) {
+      checkAll(true);
+    }
+  }
+
+  //----add event listeners
+  addItems.addEventListener('submit', addItem);
+  itemsList.addEventListener('click', toggleDone);
+  wrapper.addEventListener('click', toggleEdit);
+
+  //run it once on pageload with items gotten from localStorage or if items is empty makes no difference
+  populateList(items, itemsList);
+
 
 </script>
 
@@ -36,3 +169,31 @@
 </body>
 </html>
 
+<!--
+Lesson Learnt
+1. if you add event listener to items that don't exist, it will not work but can be overcome with event delegation
+ -idea behind event delegation is rather than lisening for a click or change event on the checkboxes directly we look for somebody that exists on the page at the time of listening so in this case we listen to the <ul> and events do bubble
+ -responsible parent and negligent children/ future children
+ -when list item is clicked on, 2 event occurs. 1 for the list item, 1 for the input, we want only the input
+
+2. listening to a submit event vs a click event on the submit button is more encompassing than just listening for a click because other things can cause a submit
+3. when submit is selected, the page will refresh. To prevent that we use e.preventDefault() behavior
+4. wrapping this.querySelector('[name="item"]') in a parentheses will allow that string to execute first and select the input box before .value is called against it
+5. object short notation where object property name and value is declared and initialized with a variable of the same name and uses its value declared earlier
+6. form has a method called form.reset() that resets the form inputs
+7. setting a default value for a function argument will prevent the function from breaking if a parameter is not passed to the function. (plates = [])
+8. the reason we are using arguments in the populateList function is so that the function can be reused in other context with different sets of arguments
+9. localStorage is a browser object that is only a key value store
+10. localStorage can only store string values not objects or anything else so we need to convert objects into strings using JSON.stringify to convert object/arrays into string equivalents
+11. JSON.parse will convert the string back into its array/object form
+12. element.matches() runs against an element not against a string
+
+Things to get used to:
+1. const items = JSON.parse(localStorage.getItem('items')) || [];
+2. function populateList(plates = [], platesList)
+3. items[index].done = !items[index].done;
+
+
+Challenge: how to only add the newest item in items array instead of rerendering the whole list , maybe another property for uniqueID - Done
+3 additional buttons, clear all, check all, uncheck all - Done
+ -->
