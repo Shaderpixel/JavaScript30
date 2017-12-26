@@ -27,7 +27,41 @@
 
   <script>
     // 👀👀👀👀👀👀👀👀👀👀👀👀👀👀👀
+    const triggers = document.querySelectorAll('a');
+    const highlight = document.createElement('span');
+    highlight.classList.add('highlight');
+    document.body.append(highlight);
+
+    function highlightLink() {
+      const linkCoords = this.getBoundingClientRect();
+      console.log(linkCoords)
+      const coords = {
+        width: linkCoords.width,
+        height: linkCoords.height,
+        x: linkCoords.x + window.scrollX,
+        y: linkCoords.y + window.scrollY
+      }
+
+      highlight.style.height = `${coords.height}px`;
+      highlight.style.width = `${coords.width}px`;
+
+      highlight.style.transform = `translate(${coords.x}px, ${coords.y}px)`;
+    }
+
+    function removeHighlight() {
+      highlight.style.height = null;
+      highlight.style.width = null;
+    }
+
+    triggers.forEach(trigger => trigger.addEventListener('mouseenter', highlightLink));
+    triggers.forEach(trigger => trigger.addEventListener('mouseout', removeHighlight));
+
   </script>
 </body>
 </html>
 
+<!--
+  Lesson Learnt
+  1. offsetHeight and offsetWidth gives rounded values while getBoundingClientRect gives values with decimals
+  2. offsetTop and offsetLeft give values relative to that of upper left corner of the current element's HTMLElement.offsetParent node, which may not be the document. So we have to use getBoundingClientRect() instead.
+ -->
