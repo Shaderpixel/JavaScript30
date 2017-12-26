@@ -7,6 +7,28 @@
 </head>
 <body>
 <script>
+    const pressed = [];
+    const secretCode = 'ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightBAEnter';
+
+    window.addEventListener('keyup', (e) => {
+        console.log(e.key);
+        pressed.push(e.key);
+        pressed.splice(-secretCode.length - 1, pressed.length - secretCode.length );
+        if (pressed.join('').includes(secretCode)) {
+            alert(`Ding Ding Ding, you found the Secret Code!`);
+            cornify_add();
+        }
+        console.log(pressed.join(''));
+    })
 </script>
 </body>
 </html>
+
+
+<!--
+Lesson Learnt
+1. If splice starts with a negative index means it starts from the end
+2. Given that push adds new items to the end of the array, we want to check for our secret code from the back as keys are being added to the pressed array
+3. length gives the full length of something but arrays are zero indexed hence length-1
+4. pressed array is kept at the length of the secret code by array.splice where the pressed array is spliced beginning from the end of array and starts splicing after the last index of the secretCode.length for the subsequent indices of (pressed.length - secretCode.length)
+ -->
