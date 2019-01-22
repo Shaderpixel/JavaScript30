@@ -2,4 +2,4 @@
 
 # JavaScript30
 
-I have gone through the challenges twice and have completed some of the additional challenges mentioned in the videos. Code from my first-attempt can be found under the first-attempt branch.
+I have gone through the challenges twice and have completed some of the additional challenges mentioned in the videos. Code from my first-attempt can be found under the [first-attempt](https://github.com/Shaderpixel/JavaScript30/tree/first-attempt) branch.
